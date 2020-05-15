@@ -1,7 +1,9 @@
-from math import*
 import numpy as np
+import matplotlib.pyplot as plt
+import time 
 
-def Zeydel(A, f, eps):
+eps = 0.2
+def Zeydel(A, f):
 	n = int(len(f))
 
 	x = np.zeros(n)
@@ -16,23 +18,38 @@ def Zeydel(A, f, eps):
 				s = s + A[i][j]*float(x[j])
 			x_new[i] = (f[i]- s) / A[i][i]
 		a = np.linalg.norm(x - x_new)
-		print("X_NEW", x_new)
-		print("X", x)
 		if a < eps:
 			flag = 1
 		else:
 			x = x_new.copy()
 	return x
 
-print('Введите размер матрицы nxn:')
-n = int(input())
-f = np.zeros(n)
-print('Введите матрицу A')
-A = [[float(j) for j in input().split()] for i in range(n)]
-print('Введите вектор свободных членов размера n')
-f = [float(i) for i in input().split()]
-#print("Введите точность")
-eps = 0.000001
-print(Zeydel(A, f,eps))
-print("Проверка решения:")
-print(np.linalg.solve(A, f))
+time_1 = np.zeros(10)
+time_2 = np.zeros(10)
+for m in range(10):
+	m = m + 1
+	n = m*100		
+	A = np.random.rand(n,n)
+	f = np.random.rand(n)
+	
+	s = np.sum(np.abs(A), axis = 1)
+	for i in range(n):
+		A[i][i] = A[i][i] + s[i]
+
+	timer_start = time.time()
+	x = Zeydel(A, f)
+	time_1[m - 1] = time.time() - timer_start
+
+	timer_start = time.time()
+	x_compare = np.linalg.solve(A, f)
+	time_2[m - 1] = time.time() - timer_start
+	
+	print('Для n =',n,'||x - x_compare|| = ', np.linalg.norm(x_compare - x))
+
+for i in range(10):
+	print(i+1,':','Время для метода Зейделя = ',time_1[i], '|','Время scipy.linalg.solve =', time_2[i])
+
+plt.plot(time_1)
+plt.plot(time_2)
+plt.show()
+
